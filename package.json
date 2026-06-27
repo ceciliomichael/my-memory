@@ -7,6 +7,7 @@
   "scripts": {
     "build": "tsc",
     "start": "node build/index.js",
+    "sync": "node build/sync.js",
     "test": "vitest run"
   },
   "keywords": [

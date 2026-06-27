@@ -31,6 +31,10 @@ The server adapts dynamically based on your `.env` configuration:
 - `EMBEDDING_BASE_URL` / `EMBEDDING_MODEL`: Optional. Enable Mode 2 (Vector Search).
 - `LLM_BASE_URL` / `LLM_MODEL`: Optional. Enable Mode 3 (Graph RAG).
 
+### Upgrading Modes
+If you save memories in Mode 1 and later configure your `.env` to enable Mode 2 or 3, your old memories will be missing embeddings and graph nodes. 
+Run `npm run sync` to retroactively generate missing intelligence for your old data.
+
 ## Tools
 
 - `save_memory`: Store facts or notes with tags.
