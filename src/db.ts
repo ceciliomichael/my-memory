@@ -3,6 +3,7 @@ import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
 import { dirname, join, resolve } from 'path';
 import * as fs from 'fs';
+import * as sqliteVec from 'sqlite-vec';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -21,6 +22,7 @@ if (!fs.existsSync(dbDir)) {
 }
 
 export const db = new Database(dbPath);
+sqliteVec.load(db);
 
 // Retrieve dimension from env or default to 1536 (OpenAI)
 const embeddingDim = process.env.EMBEDDING_DIMENSION || '1536';

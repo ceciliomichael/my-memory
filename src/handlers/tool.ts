@@ -11,7 +11,7 @@ import {
   handleAskMemory, 
   handleDeleteMemory, 
   handleGetIdentitySummary,
-  handleListScopes
+  handleListTags
 } from "../tools/memory.js";
 
 export function registerToolHandlers(server: Server) {
@@ -32,8 +32,8 @@ export function registerToolHandlers(server: Server) {
           return handleDeleteMemory(request.params.arguments);
         case "get_identity_summary":
           return handleGetIdentitySummary(request.params.arguments);
-        case "list_scopes":
-          return handleListScopes(request.params.arguments);
+        case "list_tags":
+          return handleListTags(request.params.arguments);
         default:
           throw new McpError(
             ErrorCode.MethodNotFound,

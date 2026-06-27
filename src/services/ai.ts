@@ -94,7 +94,7 @@ export async function synthesizeAnswer(query: string, results: any[]) {
   if (!url) return null;
   
   const context = results.map(r => `[Scope: ${r.scope}] ${r.content}`).join('\n');
-  const prompt = `Based on the following retrieved memories, answer the user's query.\n\nMemories:\n${context}\n\nQuery: ${query}`;
+  const prompt = `You are the memory-recall module for an autonomous AI. Synthesize the following facts to answer the query. Speak naturally in the first person (e.g., "I remember that...", "From my memory...", or "I recall..."). Do NOT use robotic phrases like "Based on the retrieved memories".\n\nMy Memories:\n${context}\n\nQuery: ${query}`;
   
   try {
     const res = await fetch(`${url}/chat/completions`, {

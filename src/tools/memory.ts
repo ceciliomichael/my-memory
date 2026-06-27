@@ -66,8 +66,8 @@ export const toolsDefinition = [
     }
   },
   {
-    name: "list_scopes",
-    description: "Lists all unique scopes currently stored in the database.",
+    name: "list_tags",
+    description: "Lists all unique tags currently stored in the database.",
     inputSchema: { type: "object", properties: {} }
   }
 ];
@@ -88,7 +88,7 @@ export async function handleSaveMemory(args: any) {
     try {
        const float32 = new Float32Array(emb);
        const buf = Buffer.from(float32.buffer);
-       db.prepare('INSERT INTO memories_embeddings (memory_rowid, embedding) VALUES (?, ?)').run(rowid, buf);
+       db.prepare('INSERT INTO memories_embeddings (memory_rowid, embedding) VALUES (?, ?)').run(BigInt(rowid), buf);
     } catch(e) {
        console.error("Failed to insert embedding", e);
     }
@@ -140,7 +140,14 @@ export async function handleAskMemory(args: any) {
       JOIN memories m ON fts.rowid = m.rowid
       WHERE memories_fts MATCH ?
     `;
-    const params: any[] = [parsed.query];
+    // Format query for FTS5 to prevent syntax errors with special characters
+    const ftsQuery = parsed.query
+      .split(/\\s+/)
+      .filter((w: string) => w.trim().length > 0)
+      .map((w: string) => `"${w.replace(/"/g, '""')}"`)
+      .join(' OR ');
+    
+    const params: any[] = [ftsQuery || '""'];
     if (parsed.scope) { sql += ` AND m.scope = ?`; params.push(parsed.scope); }
     if (parsed.type_filter) { sql += ` AND m.type = ?`; params.push(parsed.type_filter); }
     sql += ` ORDER BY rank LIMIT 10`;
@@ -187,6 +194,10 @@ export async function handleGetIdentitySummary(args: any) {
   const globalFacts = results.filter(r => r.scope === 'global').map(r => r.content);
   const workspaceFacts = results.filter(r => r.scope === parsed.scope).map(r => r.content);
   
+  if (globalFacts.length === 0 && workspaceFacts.length === 0) {
+    return { content: [{ type: "text", text: "No identity facts saved yet." }] };
+  }
+  
   const xml = `
 <identity_summary description="Merged summary of global and workspace-specific facts. Workspace facts always override global facts in case of conflict.">
   <global_facts>
@@ -200,9 +211,20 @@ export async function handleGetIdentitySummary(args: any) {
   return { content: [{ type: "text", text: xml }] };
 }
 
-export async function handleListScopes(args: any) {
-  const stmt = db.prepare('SELECT DISTINCT scope FROM memories ORDER BY scope');
-  const results = stmt.all() as {scope: string}[];
-  const scopes = results.map(r => r.scope);
-  return { content: [{ type: "text", text: JSON.stringify(scopes, null, 2) }] };
+export async function handleListTags(args: any) {
+  const stmt = db.prepare('SELECT tags FROM memories WHERE tags IS NOT NULL');
+  const results = stmt.all() as {tags: string}[];
+  const tagSet = new Set<string>();
+  
+  for (const row of results) {
+    try {
+      const tags = JSON.parse(row.tags);
+      if (Array.isArray(tags)) {
+        tags.forEach(t => tagSet.add(t));
+      }
+    } catch (e) {}
+  }
+  
+  const uniqueTags = Array.from(tagSet).sort();
+  return { content: [{ type: "text", text: JSON.stringify(uniqueTags, null, 2) }] };
 }
