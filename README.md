@@ -31,6 +31,24 @@ The server adapts dynamically based on your `.env` configuration:
 - `EMBEDDING_BASE_URL` / `EMBEDDING_MODEL`: Optional. Enable Mode 2 (Vector Search).
 - `LLM_BASE_URL` / `LLM_MODEL`: Optional. Enable Mode 3 (Graph RAG).
 
+### Client Configuration (`mcp_config.json`)
+To install this server in your MCP client (like Claude Desktop or Antigravity), add the following to your MCP configuration file. Just replace the path with wherever you cloned this repository:
+
+```json
+{
+  "mcpServers": {
+    "my-memory": {
+      "command": "node",
+      "args": [
+        "C:/absolute/path/to/my-memory/build/index.js"
+      ],
+      "env": {}
+    }
+  }
+}
+```
+*Note: The server is self-contained. It will automatically load your `.env` configuration from its own project folder, so you don't need to pass environment variables through the JSON config.*
+
 ### Upgrading Modes
 If you save memories in Mode 1 and later configure your `.env` to enable Mode 2 or 3, your old memories will automatically be backfilled with embeddings and graph nodes in the background the next time the server starts!
 
