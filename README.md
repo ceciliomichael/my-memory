@@ -25,6 +25,12 @@ The server adapts dynamically based on your `.env` configuration:
 3. (Optional) Copy `.env.example` to `.env` to configure endpoints (supports OpenAI-compatible APIs like LM Studio).
 4. `npm start`
 
+### Configuration (`.env`)
+
+- `DB_PATH`: Optional. Override the default `data/memory.db` file location.
+- `EMBEDDING_BASE_URL` / `EMBEDDING_MODEL`: Optional. Enable Mode 2 (Vector Search).
+- `LLM_BASE_URL` / `LLM_MODEL`: Optional. Enable Mode 3 (Graph RAG).
+
 ## Tools
 
 - `save_memory`: Store facts or notes with tags.

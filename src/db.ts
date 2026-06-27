@@ -1,15 +1,25 @@
+import './env.js';
 import Database from 'better-sqlite3';
 import { fileURLToPath } from 'url';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import * as fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const dataDir = join(__dirname, '../data');
-if (!fs.existsSync(dataDir)) {
-  fs.mkdirSync(dataDir, { recursive: true });
+
+let dbPath: string;
+if (process.env.DB_PATH) {
+  dbPath = resolve(process.env.DB_PATH);
+} else {
+  const dataDir = join(__dirname, '../data');
+  dbPath = join(dataDir, 'memory.db');
 }
-const dbPath = join(dataDir, 'memory.db');
+
+const dbDir = dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
 export const db = new Database(dbPath);
 
 // Retrieve dimension from env or default to 1536 (OpenAI)
