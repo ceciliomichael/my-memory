@@ -25,29 +25,62 @@ The server adapts dynamically based on your `.env` configuration:
 3. (Optional) Copy `.env.example` to `.env` to configure endpoints (supports OpenAI-compatible APIs like LM Studio).
 4. `npm start`
 
-### Configuration (`.env`)
-
-- `DB_PATH`: Optional. Override the default `data/memory.db` file location.
-- `EMBEDDING_BASE_URL` / `EMBEDDING_MODEL`: Optional. Enable Mode 2 (Vector Search).
-- `LLM_BASE_URL` / `LLM_MODEL`: Optional. Enable Mode 3 (Graph RAG).
-
 ### Client Configuration (`mcp_config.json`)
-To install this server in your MCP client (like Claude Desktop or Antigravity), add the following to your MCP configuration file. Just replace the path with wherever you cloned this repository:
 
+You can control which Mode the server runs in directly from your MCP client configuration (like Claude Desktop or Antigravity) without needing a `.env` file. Just add the following to your `mcp_config.json` and replace the path with wherever you cloned this repository:
+
+**Mode 1: FTS (Default)**
 ```json
 {
   "mcpServers": {
     "my-memory": {
       "command": "node",
-      "args": [
-        "C:/absolute/path/to/my-memory/build/index.js"
-      ],
+      "args": ["C:/absolute/path/to/my-memory/build/index.js"],
       "env": {}
     }
   }
 }
 ```
-*Note: The server is self-contained. It will automatically load your `.env` configuration from its own project folder, so you don't need to pass environment variables through the JSON config.*
+
+**Mode 2: Vector Search**
+```json
+{
+  "mcpServers": {
+    "my-memory": {
+      "command": "node",
+      "args": ["C:/absolute/path/to/my-memory/build/index.js"],
+      "env": {
+        "EMBEDDING_BASE_URL": "http://localhost:1234/v1",
+        "EMBEDDING_API_KEY": "lm-studio",
+        "EMBEDDING_MODEL": "nomic-embed-text"
+      }
+    }
+  }
+}
+```
+
+**Mode 3: Graph RAG**
+```json
+{
+  "mcpServers": {
+    "my-memory": {
+      "command": "node",
+      "args": ["C:/absolute/path/to/my-memory/build/index.js"],
+      "env": {
+        "EMBEDDING_BASE_URL": "http://localhost:1234/v1",
+        "EMBEDDING_API_KEY": "lm-studio",
+        "EMBEDDING_MODEL": "nomic-embed-text",
+        "LLM_BASE_URL": "http://localhost:1234/v1",
+        "LLM_API_KEY": "lm-studio",
+        "LLM_MODEL": "llama3"
+      }
+    }
+  }
+}
+```
+
+*Optional Global Settings:*
+You can also pass `"DB_PATH": "C:/custom/path/memory.db"` in the `env` object to override the default SQLite database location.
 
 ### Upgrading Modes
 If you save memories in Mode 1 and later configure your `.env` to enable Mode 2 or 3, your old memories will automatically be backfilled with embeddings and graph nodes in the background the next time the server starts!
