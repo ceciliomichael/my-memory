@@ -1,62 +1,42 @@
 # Memory MCP Server
 
-A robust, adaptive "second brain" Memory Server built on the Model Context Protocol (MCP). It solves context-amnesia for AI agents by providing a queryable memory store that seamlessly scales based on your environment.
+A persistent memory store for AI agents via the Model Context Protocol (MCP). It provides semantic search, graph extraction, and strict scope isolation.
 
-## 🚀 Features & 3-Tier Architecture
+## Architecture
 
-This server automatically degrades or upgrades its intelligence based on what is configured in your `.env` file:
+The server adapts dynamically based on your `.env` configuration:
 
-### Mode 1: Basic Storage (Offline & Lightweight)
-- **Trigger:** No `.env` variables provided.
-- **Storage:** Pure SQLite using `FTS5` (Full-Text Search).
-- **Behavior:** Instant keyword retrieval of facts and notes. Zero setup required.
+1. **Mode 1: FTS (Default)**
+   - Triggers when no `.env` is configured.
+   - Uses pure SQLite with `FTS5` for text search.
 
-### Mode 2: Semantic Memory (Vector Search)
-- **Trigger:** `EMBEDDING_BASE_URL` and `EMBEDDING_MODEL` are configured.
-- **Storage:** SQLite + `sqlite-vec`.
-- **Behavior:** Embeds memories upon saving and performs Cosine Similarity search to return semantically relevant context.
+2. **Mode 2: Vector Search**
+   - Triggers when `EMBEDDING_BASE_URL` and `EMBEDDING_MODEL` are set.
+   - Uses `sqlite-vec` for cosine similarity semantic search.
 
-### Mode 3: The "Active Brain" (Graph + RAG)
-- **Trigger:** Both Embedding variables AND `LLM_BASE_URL` / `LLM_MODEL` are configured.
-- **Storage:** SQLite + Vector + Knowledge Graph (Nodes/Edges).
-- **Behavior:** Background LLM extraction automatically builds a Knowledge Graph from your notes. Queries trigger an LLM-synthesized RAG answer instead of just returning raw rows.
+3. **Mode 3: Graph RAG**
+   - Triggers when both embedding and `LLM_BASE_URL` variables are set.
+   - Extracts knowledge graphs in the background and synthesizes query answers via LLM.
 
-## 🛠️ MCP Tools Exposed
+## Setup
 
-1. **`save_memory`**: Save facts (rigid rules) or notes (summaries) with an optional array of tags.
-2. **`ask_memory`**: The universal recall tool. Performs a semantic/FTS search and optionally synthesizes an answer via LLM.
-3. **`delete_memory`**: Permanently prune outdated context using the memory ID.
-4. **`get_identity_summary`**: Dynamically merges "global" facts with facts specific to your current project scope, returning a clean XML structure.
-5. **`list_scopes`**: Lists all active scopes in the database.
+1. `npm install`
+2. `npm run build`
+3. (Optional) Copy `.env.example` to `.env` to configure endpoints (supports OpenAI-compatible APIs like LM Studio).
+4. `npm start`
 
-## 🔧 Installation & Setup
+## Tools
 
-1. Clone this repository.
-2. Run \`npm install\` to install dependencies.
-3. Copy \`.env.example\` to \`.env\` and configure your models if you want Mode 2 or 3.
-4. Run \`npm run build\`.
-5. Run \`npm start\` to launch the server on stdio.
+- `save_memory`: Store facts or notes with tags.
+- `ask_memory`: Retrieve information using semantic/FTS search and optional LLM synthesis.
+- `delete_memory`: Remove outdated records by ID.
+- `get_identity_summary`: Return merged "global" and project-specific facts in an XML structure.
+- `list_scopes`: List all active scope identifiers.
 
-### Environment Configuration (.env)
+## Scoping
 
-Supports OpenAI API spec endpoints, including local servers like Ollama or LM Studio.
+Data is isolated using a `scope` string rather than absolute paths.
+- `global`: Used for universal preferences.
+- `<workspace-name>`: Used for project-specific rules.
 
-\`\`\`env
-# Semantic Vector Search
-EMBEDDING_BASE_URL="http://localhost:1234/v1"
-EMBEDDING_API_KEY="lm-studio"
-EMBEDDING_MODEL="nomic-embed-text"
-EMBEDDING_DIMENSION="768"
-
-# Graph Extraction & RAG
-LLM_BASE_URL="http://localhost:1234/v1"
-LLM_API_KEY="lm-studio"
-LLM_MODEL="llama3"
-\`\`\`
-
-## 📚 Advanced Concept: Scoping
-
-Memories are not tied to absolute file paths. They use a flexible `scope` identifier. 
-- Use `"global"` for universal facts (e.g., "I am visually impaired").
-- Use project names like `"retro-site"` for project-specific facts (e.g., "Use standard CSS").
-- When requesting an identity summary for `"retro-site"`, the server intelligently merges the global rules with the project rules, prioritizing the project rules in case of conflicts!
+The `get_identity_summary` tool automatically merges global facts with the requested project scope.
